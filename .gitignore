@@ -1,0 +1,46 @@
+# Virtual Environment
+venv/
+.env/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Environment variables
+.env
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# VS Code settings
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# SQLite database
+*.sqlite3
+
+# Build files
+build/
+dist/
+
+# Temporary files
+temp/
+tmp/
+
+# Dataset files (optional if very large)
+datasets/raw/
+datasets/processed/
+
+# Streamlit cache
+.streamlit/
+
+# Mac/Linux hidden files
+*.swp
