@@ -37,30 +37,24 @@ def get_monthly_revenue():
 
     query = """
     SELECT
-        YEAR(o.order_purchase_timestamp)
-        AS year,
+        YEAR(order_purchase_timestamp) AS year,
+        MONTH(order_purchase_timestamp) AS month,
+        ROUND(SUM(payment_value), 2) AS revenue,
+        COUNT(DISTINCT orders.order_id) AS orders
 
-        MONTH(o.order_purchase_timestamp)
-        AS month,
+    FROM orders
 
-        ROUND(
-            SUM(pay.payment_value),
-            2
-        ) AS revenue
-
-    FROM orders o
-
-    JOIN payments pay
-    ON o.order_id = pay.order_id
+    JOIN payments
+        ON orders.order_id = payments.order_id
 
     GROUP BY year, month
 
     ORDER BY year, month;
     """
 
-    df = pd.read_sql(query, engine)
+    result = pd.read_sql(query, engine)
 
-    return df.to_dict(orient="records")
+    return result.to_dict(orient="records")
 
 
 def get_customer_segments():

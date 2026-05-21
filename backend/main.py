@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from services import (
     get_top_categories,
@@ -7,7 +8,13 @@ from services import (
 )
 
 app = FastAPI()
-
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/")
 def home():
@@ -16,7 +23,7 @@ def home():
         "message": "CommerceMind AI Backend Running"
     }
 
-
+from fastapi.middleware.cors import CORSMiddleware
 @app.get("/top-categories")
 def top_categories():
 
