@@ -100,3 +100,78 @@ GROUP BY customer_segment;
     df = pd.read_sql(query, engine)
 
     return df.to_dict(orient="records")
+
+def get_category_revenue():
+
+    query = """
+    SELECT
+        products.product_category_name AS category,
+
+        ROUND(SUM(payments.payment_value), 2) AS revenue
+
+    FROM orders
+
+    JOIN order_items
+        ON orders.order_id = order_items.order_id
+
+    JOIN products
+        ON order_items.product_id = products.product_id
+
+    JOIN payments
+        ON orders.order_id = payments.order_id
+
+    GROUP BY products.product_category_name
+
+    ORDER BY revenue DESC
+
+    LIMIT 10;
+    """
+
+    result = pd.read_sql(query, engine)
+
+    return result.to_dict(orient="records")
+
+def get_monthly_category_revenue():
+
+    query = """
+    SELECT
+        YEAR(o.order_purchase_timestamp) AS year,
+
+        MONTH(o.order_purchase_timestamp) AS month,
+
+        p.product_category_name AS category,
+
+        ROUND(SUM(oi.price), 2) AS revenue
+
+    FROM orders o
+
+    JOIN order_items oi
+        ON o.order_id = oi.order_id
+
+    JOIN products p
+        ON oi.product_id = p.product_id
+
+    WHERE p.product_category_name IN (
+        'beleza_saude',
+        'relogios_presentes',
+        'cama_mesa_banho',
+        'esporte_lazer',
+        'informatica_acessorios'
+    )
+
+    GROUP BY
+        YEAR(o.order_purchase_timestamp),
+        MONTH(o.order_purchase_timestamp),
+        p.product_category_name
+
+    ORDER BY
+        YEAR(o.order_purchase_timestamp),
+        MONTH(o.order_purchase_timestamp);
+    """
+
+    result = pd.read_sql(query, engine)
+
+    return result.to_dict(orient="records")
+
+    
+    

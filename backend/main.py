@@ -4,7 +4,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from services import (
     get_top_categories,
     get_monthly_revenue,
-    get_customer_segments
+    get_customer_segments,
+    get_category_revenue,
+    get_monthly_category_revenue
 )
 
 app = FastAPI()
@@ -40,3 +42,11 @@ def monthly_revenue():
 def customer_segments():
 
     return get_customer_segments()
+
+@app.get("/category-revenue")
+def category_revenue():
+    return get_category_revenue()
+
+@app.get("/monthly-category-revenue")
+def monthly_category_revenue():
+    return get_monthly_category_revenue()

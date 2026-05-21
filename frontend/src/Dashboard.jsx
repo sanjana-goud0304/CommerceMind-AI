@@ -19,18 +19,6 @@ const BAR_COLORS = [P.amber,P.teal,P.blue,P.purple,P.coral,P.green,"#60a5fa","#a
 
 /* ─── RAW DATA ─────────────────────────────────────────────────── */
 
-const RAW_CATEGORY = [
-  {category:"Health & Beauty",    short:"Health",    "2017":479407,"2018":753725},
-  {category:"Watches & Gifts",    short:"Watches",   "2017":484322,"2018":681855},
-  {category:"Bed, Bath & Table",  short:"Bed/Bath",  "2017":490324,"2018":533111},
-  {category:"Sports & Leisure",   short:"Sports",    "2017":437686,"2018":517167},
-  {category:"Computers & Acc.",   short:"Computers", "2017":392456,"2018":496269},
-  {category:"Furniture & Decor",  short:"Furniture", "2017":308501,"2018":403427},
-  {category:"Housewares",         short:"Housewares","2017":267621,"2018":348008},
-  {category:"Cool Stuff",         short:"Cool Stuff","2017":265091,"2018":345113},
-  {category:"Auto",               short:"Auto",      "2017":251542,"2018":327425},
-  {category:"Toys",               short:"Toys",      "2017":204815,"2018":266471},
-];
 
 const RAW_PAYMENT = {
   "All":  [{name:"Credit Card",value:12101095},{name:"Boleto",value:2769933},{name:"Voucher",value:343013},{name:"Debit Card",value:208421}],
@@ -44,23 +32,7 @@ const RAW_SEGMENT = [
   {name:"VIP",    count:4668, revenue:4132561,pct:5.0, color:P.amber},
 ];
 
-const monthlyRevenue_CAT = [
-  {month:"Jun'17",yr:"2017",health_beauty:31677,watches_gifts:27338,bed_bath:33803,sports:32067,computers:36194},
-  {month:"Jul'17",yr:"2017",health_beauty:34239,watches_gifts:33702,bed_bath:62787,sports:36619,computers:38176},
-  {month:"Aug'17",yr:"2017",health_beauty:49030,watches_gifts:36171,bed_bath:56581,sports:40625,computers:33826},
-  {month:"Sep'17",yr:"2017",health_beauty:50649,watches_gifts:44749,bed_bath:52106,sports:48972,computers:28041},
-  {month:"Oct'17",yr:"2017",health_beauty:40699,watches_gifts:64875,bed_bath:46008,sports:48569,computers:42009},
-  {month:"Nov'17",yr:"2017",health_beauty:78274,watches_gifts:95292,bed_bath:87958,sports:62686,computers:69676},
-  {month:"Dec'17",yr:"2017",health_beauty:60689,watches_gifts:69557,bed_bath:50081,sports:58722,computers:37429},
-  {month:"Jan'18",yr:"2018",health_beauty:71406,watches_gifts:73521,bed_bath:75408,sports:86173,computers:80504},
-  {month:"Feb'18",yr:"2018",health_beauty:84577,watches_gifts:60725,bed_bath:60366,sports:74541,computers:100132},
-  {month:"Mar'18",yr:"2018",health_beauty:84489,watches_gifts:95661,bed_bath:67786,sports:81657,computers:84708},
-  {month:"Apr'18",yr:"2018",health_beauty:91058,watches_gifts:88623,bed_bath:71380,sports:65794,computers:57371},
-  {month:"May'18",yr:"2018",health_beauty:94534,watches_gifts:119365,bed_bath:71265,sports:59210,computers:50632},
-  {month:"Jun'18",yr:"2018",health_beauty:106746,watches_gifts:85028,bed_bath:70857,sports:44916,computers:41806},
-  {month:"Jul'18",yr:"2018",health_beauty:103524,watches_gifts:95165,bed_bath:54405,sports:54016,computers:41063},
-  {month:"Aug'18",yr:"2018",health_beauty:119391,watches_gifts:69767,bed_bath:60891,sports:50860,computers:40053},
-];
+
 
 const TOP_CUSTOMERS = [
   {id:"0a0a92…fa872",spend:13664.08,orders:1},
@@ -73,13 +45,8 @@ const TOP_CUSTOMERS = [
   {id:"eebb5d…ccb",  spend:4764.34, orders:1},
 ];
 
-const CAT_LINES = [
-  {key:"health_beauty",label:"Health & Beauty",color:P.amber},
-  {key:"watches_gifts",label:"Watches & Gifts",color:P.teal},
-  {key:"bed_bath",     label:"Bed, Bath & Table",color:P.purple},
-  {key:"sports",       label:"Sports & Leisure",color:P.blue},
-  {key:"computers",    label:"Computers",color:P.coral},
-];
+
+  
 
 const INSIGHTS = [
   {icon:"📈",tag:"Growth",  col:P.green, title:"9× Revenue Growth in 15 Months",
@@ -143,7 +110,13 @@ const Pill = ({label,active,color,onClick}) => (
 );
 
 /* ─── SLICER BAR ───────────────────────────────────────────────── */
-function SlicerBar({filters,setFilters,activeCount,onClear}) {
+ function SlicerBar({
+  filters,
+  setFilters,
+  activeCount,
+  onClear,
+  categoryRevenue
+}){
   const [open,setOpen] = useState(true);
 
   const toggle = (key,val) => setFilters(f => {
@@ -156,7 +129,12 @@ function SlicerBar({filters,setFilters,activeCount,onClear}) {
 
   const SLICERS = [
     {key:"year",    label:"Year",    color:P.amber,  opts:["All","2017","2018"]},
-    {key:"category",label:"Category",color:P.teal,   opts:["All",...RAW_CATEGORY.map(c=>c.category)]},
+    {
+  key:"category",
+  label:"Category",
+  color:P.teal,
+  opts:["All", ...new Set(categoryRevenue.map(c => c.category))]
+},
     {key:"payment", label:"Payment", color:P.purple, opts:["All","Credit Card","Boleto","Voucher","Debit Card"]},
     {key:"segment", label:"Segment", color:P.blue,   opts:["All","VIP","Premium","Regular"]},
   ];
@@ -243,6 +221,11 @@ function SlicerBar({filters,setFilters,activeCount,onClear}) {
   export default function Dashboard() {
 
   const [monthlyRevenue, setMonthlyRevenue] = useState([]);
+  const [categoryRevenue, setCategoryRevenue] = useState([]);
+  const [
+  monthlyCategoryRevenue,
+  setMonthlyCategoryRevenue
+] = useState([]);
 
   useEffect(() => {
 
@@ -275,6 +258,84 @@ function SlicerBar({filters,setFilters,activeCount,onClear}) {
 
 }, []);
 
+useEffect(() => {
+
+  axios
+    .get("http://127.0.0.1:8000/category-revenue")
+
+    .then((response) => {
+
+      const formatted = response.data.map((item) => ({
+
+  category: item.category,
+
+  displayName: item.category
+    .replaceAll("_", " "),
+
+  revenue: Number(item.revenue)
+
+}));
+
+      setCategoryRevenue(formatted);
+
+    })
+
+    .catch((error) => {
+
+      console.error(
+        "Category Revenue API Error:",
+        error
+      );
+
+    });
+
+}, []);
+
+useEffect(() => {
+
+  axios
+    .get("http://127.0.0.1:8000/monthly-category-revenue")
+
+    .then((response) => {
+
+      const grouped = {};
+
+      response.data.forEach((item) => {
+
+        const key = `${item.month}/${item.year}`;
+
+        if (!grouped[key]) {
+
+          grouped[key] = {
+            month: key,
+            yr: String(item.year)
+          };
+
+        }
+
+        grouped[key][item.category] =
+          Number(item.revenue);
+
+      });
+
+      const formatted =
+        Object.values(grouped);
+
+      setMonthlyCategoryRevenue(formatted);
+
+    })
+
+    .catch((error) => {
+
+      console.error(
+        "Monthly Category API Error:",
+        error
+      );
+
+    });
+
+}, []);
+
   // rest of dashboard code below
   const [tab, setTab] = useState("overview");
   const [filters, setFilters] = useState({
@@ -288,7 +349,17 @@ function SlicerBar({filters,setFilters,activeCount,onClear}) {
   /* ── DERIVED / FILTERED DATA ── */
   const d = useMemo(() => {
     const yrs  = filters.year.includes("All")     ? ["2017","2018"]                      : filters.year;
-    const cats = filters.category.includes("All") ? RAW_CATEGORY.map(c=>c.category)      : filters.category;
+    const cats = filters.category.includes("All")
+  ? [
+      ...new Set(
+        monthlyCategoryRevenue.flatMap((item) =>
+          Object.keys(item).filter(
+            (key) => !["month", "yr"].includes(key)
+          )
+        )
+      ),
+    ]
+  : filters.category;
     const pays = filters.payment.includes("All")  ? ["Credit Card","Boleto","Voucher","Debit Card"] : filters.payment;
     const segs = filters.segment.includes("All")  ? ["VIP","Premium","Regular"]           : filters.segment;
 
@@ -302,13 +373,14 @@ function SlicerBar({filters,setFilters,activeCount,onClear}) {
   }));
 
     // Monthly category trend (year-filtered)
-    const monthlyCat = monthlyRevenue_CAT.filter(r => yrs.includes(r.yr));
+     const monthlyCat = monthlyCategoryRevenue.filter(
+  r => yrs.includes(r.yr)
+);
 
     // Category revenue (year + category filtered)
-    const catRev = RAW_CATEGORY
-      .filter(c => cats.includes(c.category))
-      .map(c => ({...c, revenue: yrs.reduce((s,y) => s+(c[y]||0), 0)}))
-      .sort((a,b) => b.revenue - a.revenue);
+ const catRev = categoryRevenue
+  .filter(c => cats.includes(c.category))
+  .sort((a,b) => b.revenue - a.revenue);
 
     // Payment data (year + payment filtered)
     const payBase = yrs.length === 2 ? RAW_PAYMENT["All"]
@@ -324,7 +396,10 @@ function SlicerBar({filters,setFilters,activeCount,onClear}) {
 
     // Compute KPIs with filters applied
     // Scale revenue by category selection ratio
-    const allCatRev = RAW_CATEGORY.reduce((s,c)=>s+yrs.reduce((ss,y)=>ss+(c[y]||0),0),0);
+    const allCatRev = categoryRevenue.reduce(
+  (s,c)=>s + c.revenue,
+  0
+);
     const selCatRev = catRev.reduce((s,c)=>s+c.revenue,0);
     const catScale  = allCatRev > 0 ? selCatRev/allCatRev : 1;
     // Scale by payment selection ratio
@@ -338,10 +413,24 @@ function SlicerBar({filters,setFilters,activeCount,onClear}) {
     const totalCustomers = Math.round(totalOrders * 0.997);
 
     const peakMonth = monthly.reduce((p,c) => c.revenue > (p?.revenue||0) ? c : p, null);
+    const dynamicCategoryLines = [
+  ...new Set(
+    monthlyCategoryRevenue.flatMap((item) =>
+      Object.keys(item).filter(
+        (key) => !["month", "yr"].includes(key)
+      )
+    )
+  )
+].slice(0, 5);
 
-    return {monthly,monthlyCat,catRev,payData,segFilt,
+    return {monthly,monthlyCat,catRev,payData,segFilt,dynamicCategoryLines,
       totalRevenue,totalOrders,aov,totalCustomers,peakMonth};
-  }, [filters, monthlyRevenue]);
+  }, [
+  filters,
+  monthlyRevenue,
+  categoryRevenue,
+  monthlyCategoryRevenue
+]);
 
   return (
     <div style={{background:P.bg,minHeight:"100vh",fontFamily:"'DM Sans','Helvetica Neue',sans-serif",color:P.textPrimary}}>
@@ -387,8 +476,13 @@ function SlicerBar({filters,setFilters,activeCount,onClear}) {
       </div>
 
       {/* ── SLICER BAR ── */}
-      <SlicerBar filters={filters} setFilters={setFilters} activeCount={activeCount} onClear={clearFilters}/>
-
+      <SlicerBar
+  filters={filters}
+  setFilters={setFilters}
+  activeCount={activeCount}
+  onClear={clearFilters}
+  categoryRevenue={categoryRevenue}
+/>
       {/* ── CONTENT ── */}
       <div style={{padding:"28px 40px",maxWidth:1400,margin:"0 auto"}}>
 
@@ -717,7 +811,7 @@ function SlicerBar({filters,setFilters,activeCount,onClear}) {
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={d.catRev} margin={{top:0,right:20,bottom:10,left:10}}>
                         <CartesianGrid stroke={P.cardBorder} strokeDasharray="3 3" vertical={false}/>
-                        <XAxis dataKey="short" tick={{fill:P.textMuted,fontSize:11}} axisLine={false} tickLine={false}/>
+                        <XAxis dataKey="displayName" tick={{fill:P.textMuted,fontSize:11}} axisLine={false} tickLine={false}/>
                         <YAxis tickFormatter={v=>`R$${(v/1000).toFixed(0)}K`} tick={{fill:P.textMuted,fontSize:11}} axisLine={false} tickLine={false}/>
                         <Tooltip content={<Tip/>}/>
                         <Bar dataKey="revenue" name="Revenue" radius={[4,4,0,0]}>
@@ -734,12 +828,44 @@ function SlicerBar({filters,setFilters,activeCount,onClear}) {
                 {d.monthlyCat.length} months · Health & Beauty accelerating from mid-2018
               </p>
               <div style={{display:"flex",flexWrap:"wrap",gap:12,marginBottom:14}}>
-                {CAT_LINES.map(c=>(
-                  <div key={c.key} style={{display:"flex",alignItems:"center",gap:6}}>
-                    <div style={{width:18,height:3,borderRadius:2,background:c.color}}/>
-                    <span style={{fontSize:11,color:P.textSecondary}}>{c.label}</span>
-                  </div>
-                ))}
+               {d.dynamicCategoryLines.map((category, index) => (
+
+  <div
+    key={category}
+    style={{
+      display:"flex",
+      alignItems:"center",
+      gap:6
+    }}
+  >
+
+    <div
+      style={{
+        width:18,
+        height:3,
+        borderRadius:2,
+        background:[
+          P.amber,
+          P.teal,
+          P.purple,
+          P.blue,
+          P.coral
+        ][index % 5]
+      }}
+    />
+
+    <span
+      style={{
+        fontSize:11,
+        color:P.textSecondary
+      }}
+    >
+      {category.replaceAll("_"," ")}
+    </span>
+
+  </div>
+
+))}
               </div>
               {d.monthlyCat.length===0
                 ? <p style={{color:P.textMuted,textAlign:"center",padding:"32px 0"}}>No year selected</p>
@@ -750,11 +876,38 @@ function SlicerBar({filters,setFilters,activeCount,onClear}) {
                         <XAxis dataKey="month" tick={{fill:P.textMuted,fontSize:10}} axisLine={false} tickLine={false}/>
                         <YAxis tickFormatter={v=>`R$${(v/1000).toFixed(0)}K`} tick={{fill:P.textMuted,fontSize:10}} axisLine={false} tickLine={false}/>
                         <Tooltip content={<Tip/>}/>
-                        {CAT_LINES.map((c,i)=>(
-                          <Line key={c.key} type="monotone" dataKey={c.key} name={c.label}
-                            stroke={c.color} strokeWidth={2} dot={false}
-                            strokeDasharray={["none","5 3","3 3","8 3","2 4"][i]}/>
-                        ))}
+                       {d.dynamicCategoryLines.map((category, index) => (
+
+
+  <Line
+    key={category}
+
+    type="monotone"
+
+    dataKey={category}
+
+    name={category.replaceAll("_"," ")}
+
+    stroke={[
+      P.amber,
+      P.teal,
+      P.purple,
+      P.blue,
+      P.coral
+    ][index % 5]}
+
+    strokeWidth={2}
+
+    dot={false}
+
+    strokeDasharray={
+      ["none","5 3","3 3","8 3","2 4"]
+      [index % 5]
+    }
+
+  />
+
+))}
                       </LineChart>
                     </ResponsiveContainer>
                   </div>
