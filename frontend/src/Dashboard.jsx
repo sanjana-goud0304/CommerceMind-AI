@@ -17,52 +17,6 @@ const P = {
 const PAY_COLORS = [P.amber, P.teal, P.purple, P.blue];
 const BAR_COLORS = [P.amber,P.teal,P.blue,P.purple,P.coral,P.green,"#60a5fa","#a78bfa","#fb923c","#34d399"];
 
-/* ─── RAW DATA ─────────────────────────────────────────────────── */
-
-
-const RAW_PAYMENT = {
-  "All":  [{name:"Credit Card",value:12101095},{name:"Boleto",value:2769933},{name:"Voucher",value:343013},{name:"Debit Card",value:208421}],
-  "2017": [{name:"Credit Card",value:5432980}, {name:"Boleto",value:1244214},{name:"Voucher",value:154157},{name:"Debit Card",value:93640}],
-  "2018": [{name:"Credit Card",value:6668115}, {name:"Boleto",value:1525719},{name:"Voucher",value:188856},{name:"Debit Card",value:114781}],
-};
-
-const RAW_SEGMENT = [
-  {name:"Regular",count:74682,revenue:7166962,pct:80.1,color:P.blue},
-  {name:"Premium",count:14007,revenue:4122939,pct:15.0,color:P.purple},
-  {name:"VIP",    count:4668, revenue:4132561,pct:5.0, color:P.amber},
-];
-
-
-
-const TOP_CUSTOMERS = [
-  {id:"0a0a92…fa872",spend:13664.08,orders:1},
-  {id:"da122d…690c", spend:7571.63, orders:2},
-  {id:"763c8b…2b93", spend:7274.88, orders:1},
-  {id:"dc4802…526",  spend:6929.31, orders:1},
-  {id:"459bef…2a62", spend:6922.21, orders:1},
-  {id:"ff4159…d66",  spend:6726.66, orders:1},
-  {id:"400766…987",  spend:6081.54, orders:1},
-  {id:"eebb5d…ccb",  spend:4764.34, orders:1},
-];
-
-
-  
-
-const INSIGHTS = [
-  {icon:"📈",tag:"Growth",  col:P.green, title:"9× Revenue Growth in 15 Months",
-   body:"Revenue surged from R$127K (Jan 2017) to over R$1.1M/month by mid-2018. November 2017 spiked 53% MoM on Black Friday. Q4 promotional campaigns are the highest-leverage timing opportunity."},
-  {icon:"💳",tag:"Payments",col:P.blue,  title:"Credit Card Concentration Risk",
-   body:"78.5% of revenue flows through credit cards. Expanding installment options and Pix integration could unlock an underserved segment and reduce chargeback exposure significantly."},
-  {icon:"👑",tag:"Customer",col:P.amber, title:"VIP Segment: 5% of Buyers → 26.8% of Revenue",
-   body:"4,668 VIP customers generate R$4.13M — nearly matching all 74K Regular customers combined. A structured loyalty programme with early access and free delivery could double VIP order frequency."},
-  {icon:"🔁",tag:"Retention",col:P.coral,title:"97% One-and-Done Purchase Pattern",
-   body:"Only 3% of customers return. Converting 5% of single-buyers to repeat could add ~R$750K incrementally. Post-purchase email flows and subscription bundles are the highest-ROI levers."},
-  {icon:"🧴",tag:"Product", col:P.teal,  title:"Health & Beauty — Emerging Market Leader",
-   body:"The category overtook all peers from mid-2018, reaching R$119K in August 2018 (+277% vs Jun 2017). Invest in supplier depth and dedicated ad spend to consolidate this lead."},
-  {icon:"🗺️",tag:"Strategy",col:P.purple,title:"42% Geographic Concentration in São Paulo",
-   body:"SP represents 42% of customers; RJ and MG add another 25%. Targeted logistics expansion into RS, PR, and SC with regional seller onboarding is a clear incremental revenue unlock."},
-];
-
 /* ─── HELPERS ──────────────────────────────────────────────────── */
 const fmtK = v => v >= 1e6 ? `R$${(v/1e6).toFixed(1)}M` : v >= 1000 ? `R$${(v/1000).toFixed(0)}K` : `R$${Math.round(v)}`;
 const fmtN = n => new Intl.NumberFormat("en-US").format(Math.round(n));
@@ -220,14 +174,22 @@ const Pill = ({label,active,color,onClick}) => (
 /* ─── MAIN DASHBOARD ────────────────────────────────────────────── */
   export default function Dashboard() {
 
-  const [monthlyRevenue, setMonthlyRevenue] = useState([]);
-  const [categoryRevenue, setCategoryRevenue] = useState([]);
-  const [
-  monthlyCategoryRevenue,
-  setMonthlyCategoryRevenue
-] = useState([]);
-
-  useEffect(() => {
+  // ─────────────────────────────────────────────
+// STATES
+// ─────────────────────────────────────────────
+const [monthlyRevenue, setMonthlyRevenue] = useState([]);
+const [categoryRevenue, setCategoryRevenue] = useState([]);
+const [monthlyCategoryRevenue, setMonthlyCategoryRevenue] = useState([]);
+const [paymentData, setPaymentData] = useState([]);
+const [segmentData, setSegmentData] = useState([]);
+const [repeatData, setRepeatData] = useState([]);
+const [kpis, setKpis] = useState({});
+const [insights, setInsights] = useState([]);
+const [topCustomers, setTopCustomers] = useState([]);
+// ─────────────────────────────────────────────
+// MONTHLY REVENUE API
+// ─────────────────────────────────────────────
+useEffect(() => {
 
   axios
     .get("http://127.0.0.1:8000/monthly-revenue")
@@ -252,12 +214,19 @@ const Pill = ({label,active,color,onClick}) => (
 
     .catch((error) => {
 
-      console.error("API Error:", error);
+      console.error(
+        "Monthly Revenue API Error:",
+        error
+      );
 
     });
 
 }, []);
 
+
+// ─────────────────────────────────────────────
+// CATEGORY REVENUE API
+// ─────────────────────────────────────────────
 useEffect(() => {
 
   axios
@@ -267,14 +236,15 @@ useEffect(() => {
 
       const formatted = response.data.map((item) => ({
 
-  category: item.category,
+        category: item.category,
 
-  displayName: item.category
-    .replaceAll("_", " "),
+        revenue: Number(item.revenue),
 
-  revenue: Number(item.revenue)
+        short: item.category
+          .replaceAll("_", " ")
+          .slice(0, 12)
 
-}));
+      }));
 
       setCategoryRevenue(formatted);
 
@@ -291,6 +261,10 @@ useEffect(() => {
 
 }, []);
 
+
+// ─────────────────────────────────────────────
+// MONTHLY CATEGORY REVENUE API
+// ─────────────────────────────────────────────
 useEffect(() => {
 
   axios
@@ -302,7 +276,8 @@ useEffect(() => {
 
       response.data.forEach((item) => {
 
-        const key = `${item.month}/${item.year}`;
+        const key =
+          `${item.month}/${item.year}`;
 
         if (!grouped[key]) {
 
@@ -336,6 +311,204 @@ useEffect(() => {
 
 }, []);
 
+
+// ─────────────────────────────────────────────
+// KPI API
+// ─────────────────────────────────────────────
+useEffect(() => {
+
+  axios
+    .get("http://127.0.0.1:8000/kpis")
+
+    .then((response) => {
+
+      setKpis(response.data[0]);
+
+    })
+
+    .catch((error) => {
+
+      console.error(
+        "KPI API Error:",
+        error
+      );
+
+    });
+
+}, []);
+
+
+// ─────────────────────────────────────────────
+// PAYMENT BREAKDOWN API
+// ─────────────────────────────────────────────
+useEffect(() => {
+
+  axios
+    .get("http://127.0.0.1:8000/payment-breakdown")
+
+    .then((response) => {
+
+      const formatted =
+        response.data.map((item) => ({
+
+          name:
+            item.payment_type
+              .replace("_", " ")
+              .replace(/\b\w/g, l => l.toUpperCase()),
+
+          value:
+            Number(item.revenue)
+
+        }));
+
+      setPaymentData(formatted);
+
+    })
+
+    .catch((error) => {
+
+      console.error(
+        "Payment API Error:",
+        error
+      );
+
+    });
+
+}, []);
+
+
+// ─────────────────────────────────────────────
+// CUSTOMER SEGMENTS API
+// ─────────────────────────────────────────────
+useEffect(() => {
+
+  axios
+    .get("http://127.0.0.1:8000/customer-segments")
+
+    .then((response) => {
+
+      const totalCustomers =
+        response.data.reduce(
+          (s,r)=>s + Number(r.count),
+          0
+        );
+
+      const formatted =
+        response.data.map((item) => ({
+
+          name:
+            item.customer_segment,
+
+          count:
+            Number(item.count),
+
+          revenue:
+            Number(item.revenue),
+
+          pct:
+            (
+              Number(item.count)
+              / totalCustomers
+            ) * 100,
+
+          color:
+            item.customer_segment === "VIP"
+              ? P.amber
+              : item.customer_segment === "Premium"
+              ? P.purple
+              : P.blue
+
+        }));
+
+      setSegmentData(formatted);
+
+    })
+
+    .catch((error) => {
+
+      console.error(
+        "Segment API Error:",
+        error
+      );
+
+    });
+
+}, []);
+
+
+// ─────────────────────────────────────────────
+// REPEAT CUSTOMER API
+// ─────────────────────────────────────────────
+useEffect(() => {
+
+  axios
+    .get("http://127.0.0.1:8000/repeat-customers")
+
+    .then((response) => {
+
+      const data =
+        response.data[0];
+
+      setRepeatData([
+        {
+          name: "New",
+          value:
+            Number(
+              data.single_purchase
+            )
+        },
+        {
+          name: "Repeat",
+          value:
+            Number(
+              data.repeat_purchase
+            )
+        }
+      ]);
+
+    })
+
+    .catch((error) => {
+
+      console.error(
+        "Repeat Customer API Error:",
+        error
+      );
+
+    });
+
+}, []);
+
+// ─────────────────────────────────────────────
+// TOP CUSTOMERS API
+// ─────────────────────────────────────────────
+useEffect(() => {
+
+  axios
+    .get("http://127.0.0.1:8000/top-customers")
+
+    .then((response) => {
+
+      setTopCustomers(response.data);
+
+    })
+
+    .catch((error) => {
+
+      console.error(
+        "Top Customers API Error:",
+        error
+      );
+
+    });
+
+}, []);
+
+
+// ─────────────────────────────────────────────
+// DYNAMIC INSIGHTS
+// ─────────────────────────────────────────────
+
   // rest of dashboard code below
   const [tab, setTab] = useState("overview");
   const [filters, setFilters] = useState({
@@ -346,91 +519,261 @@ useEffect(() => {
   const clearFilters = () => setFilters({year:["All"],category:["All"],payment:["All"],segment:["All"]});
   const activeCount = Object.values(filters).filter(v=>!v.includes("All")).reduce((a,v)=>a+v.length,0);
 
-  /* ── DERIVED / FILTERED DATA ── */
-  const d = useMemo(() => {
-    const yrs  = filters.year.includes("All")     ? ["2017","2018"]                      : filters.year;
-    const cats = filters.category.includes("All")
-  ? [
-      ...new Set(
-        monthlyCategoryRevenue.flatMap((item) =>
-          Object.keys(item).filter(
-            (key) => !["month", "yr"].includes(key)
+// ─────────────────────────────────────────────
+// useMemo
+// ─────────────────────────────────────────────
+const d = useMemo(() => {
+
+  const yrs =
+    filters.year.includes("All")
+      ? ["2017","2018"]
+      : filters.year;
+
+  const cats =
+    filters.category.includes("All")
+      ? [
+          ...new Set(
+            monthlyCategoryRevenue.flatMap(
+              (item) =>
+                Object.keys(item).filter(
+                  (key) =>
+                    !["month","yr"]
+                      .includes(key)
+                )
+            )
           )
-        )
-      ),
-    ]
-  : filters.category;
-    const pays = filters.payment.includes("All")  ? ["Credit Card","Boleto","Voucher","Debit Card"] : filters.payment;
-    const segs = filters.segment.includes("All")  ? ["VIP","Premium","Regular"]           : filters.segment;
+        ]
+      : filters.category;
 
-    // Monthly revenue + orders (year-filtered)
-   const monthly = monthlyRevenue
-  .filter(r => yrs.includes(r.yr))
-  .map(r => ({
-    ...r,
-    revenue: Number(r.revenue) || 0,
-    orders: Number(r.orders) || 1
-  }));
+  const pays =
+    filters.payment.includes("All")
+      ? paymentData.map(p => p.name)
+      : filters.payment;
+  const segs =
+  filters.segment.includes("All")
+    ? segmentData.map(s => s.name)
+    : filters.segment;
 
-    // Monthly category trend (year-filtered)
-     const monthlyCat = monthlyCategoryRevenue.filter(
-  r => yrs.includes(r.yr)
-);
 
-    // Category revenue (year + category filtered)
- const catRev = categoryRevenue
-  .filter(c => cats.includes(c.category))
-  .sort((a,b) => b.revenue - a.revenue);
+  // Monthly revenue
+  const monthly =
+    monthlyRevenue
+      .filter(r =>
+        yrs.includes(r.yr)
+      );
 
-    // Payment data (year + payment filtered)
-    const payBase = yrs.length === 2 ? RAW_PAYMENT["All"]
-                  : RAW_PAYMENT[yrs[0]] || RAW_PAYMENT["All"];
-    const payFilt = payBase.filter(p => pays.includes(p.name));
-    const payTotal = payFilt.reduce((s,p)=>s+p.value, 0);
-    const payData = payFilt.map(p => ({
-      ...p, pct: payTotal > 0 ? +((p.value/payTotal)*100).toFixed(1) : 0,
+
+  // Monthly category revenue
+  const monthlyCat =
+    monthlyCategoryRevenue.filter(
+      r => yrs.includes(r.yr)
+    );
+
+
+  // Category revenue
+  const catRev =
+    categoryRevenue
+      .filter(c =>
+        cats.includes(c.category)
+      )
+      .sort(
+        (a,b) =>
+          b.revenue - a.revenue
+      );
+
+
+  // Payment data
+  const payFilt =
+    paymentData.filter(p =>
+      pays.includes(p.name)
+    );
+
+  const payTotal =
+    payFilt.reduce(
+      (s,p)=>s+p.value,
+      0
+    );
+
+  const payData =
+    payFilt.map(p => ({
+      ...p,
+
+      pct:
+        payTotal > 0
+          ? +(
+              (p.value/payTotal)
+              * 100
+            ).toFixed(1)
+          : 0,
     }));
 
-    // Segment data (segment filtered)
-    const segFilt = RAW_SEGMENT.filter(s => segs.includes(s.name));
 
-    // Compute KPIs with filters applied
-    // Scale revenue by category selection ratio
-    const allCatRev = categoryRevenue.reduce(
-  (s,c)=>s + c.revenue,
-  0
-);
-    const selCatRev = catRev.reduce((s,c)=>s+c.revenue,0);
-    const catScale  = allCatRev > 0 ? selCatRev/allCatRev : 1;
-    // Scale by payment selection ratio
-    const fullPayTotal = yrs.length===2 ? 15422461 : yrs[0]==="2017" ? 6924991 : 8497470;
-    const payScale  = fullPayTotal > 0 ? Math.min(payTotal/fullPayTotal, 1) : 1;
+  // Segment data
+  const segFilt = segmentData
+  .filter(
+    (s) =>
+      segs.includes(s.name)
+  )
+  .map((s) => ({
 
-    const baseRev      = monthly.reduce((s,r)=>s+r.revenue, 0);
-    const totalRevenue = Math.round(baseRev * catScale * payScale);
-    const totalOrders  = monthly.reduce((s,r)=>s+r.orders, 0);
-    const aov          = totalOrders > 0 ? totalRevenue/totalOrders : 0;
-    const totalCustomers = Math.round(totalOrders * 0.997);
+    ...s,
 
-    const peakMonth = monthly.reduce((p,c) => c.revenue > (p?.revenue||0) ? c : p, null);
-    const dynamicCategoryLines = [
-  ...new Set(
-    monthlyCategoryRevenue.flatMap((item) =>
-      Object.keys(item).filter(
-        (key) => !["month", "yr"].includes(key)
+    pct:
+      (
+        Number(s.count) /
+
+        segmentData.reduce(
+          (a, b) =>
+            a + Number(b.count),
+          0
+        )
+
+      ) * 100
+
+  }));
+
+
+  // KPI data
+  const totalRevenue =
+    Number(
+      kpis.total_revenue || 0
+    );
+
+  const totalOrders =
+    Number(
+      kpis.total_orders || 0
+    );
+
+  const aov =
+    totalOrders > 0
+      ? totalRevenue / totalOrders
+      : 0;
+
+  const totalCustomers =
+    segFilt.reduce(
+      (s,r)=>s+r.count,
+      0
+    );
+
+
+  // VIP Revenue Share
+  const totalSegmentRevenue =
+  segFilt.reduce(
+    (s,r)=>s + r.revenue,
+    0
+  );
+
+  const vipRevenue =
+    segFilt.find(
+      s => s.name === "VIP"
+    )?.revenue || 0;
+
+const vipRevenueShare =
+  totalSegmentRevenue > 0
+    ? (
+        (vipRevenue /
+        totalSegmentRevenue) * 100
+      ).toFixed(1)
+    : 0;
+
+
+  // Repeat Rate
+  const repeatCustomers =
+    repeatData.find(
+      r => r.name === "Repeat"
+    )?.value || 0;
+
+  const totalRepeatCustomers =
+    repeatData.reduce(
+      (s,r)=>s+r.value,
+      0
+    );
+
+  const repeatRate =
+    totalRepeatCustomers > 0
+      ? (
+          (repeatCustomers /
+          totalRepeatCustomers) * 100
+        ).toFixed(1)
+      : 0;
+
+
+  // Peak month
+  const peakMonth =
+    monthly.reduce(
+      (p,c) =>
+        c.revenue >
+        (p?.revenue || 0)
+          ? c
+          : p,
+      null
+    );
+
+
+  // Dynamic product lines
+  const dynamicCategoryLines = [
+    ...new Set(
+      monthlyCategoryRevenue.flatMap(
+        (item) =>
+          Object.keys(item).filter(
+            (key) =>
+              !["month","yr"]
+                .includes(key)
+          )
       )
     )
-  )
-].slice(0, 5);
+  ].slice(0, 5); 
+  
+return {
 
-    return {monthly,monthlyCat,catRev,payData,segFilt,dynamicCategoryLines,
-      totalRevenue,totalOrders,aov,totalCustomers,peakMonth};
-  }, [
+    monthly,
+    monthlyCat,
+    catRev,
+    payData,
+    segFilt,
+
+    totalRevenue,
+    totalOrders,
+    aov,
+    totalCustomers,
+
+    vipRevenueShare,
+    repeatRate,
+
+    peakMonth,
+
+    dynamicCategoryLines
+
+  };
+
+}, [
+
   filters,
+
   monthlyRevenue,
+
   categoryRevenue,
-  monthlyCategoryRevenue
+
+  monthlyCategoryRevenue,
+
+  paymentData,
+
+  segmentData,
+
+  repeatData,
+
+  kpis
+
 ]);
+
+ const categoryKeys =
+  d.monthlyCat.length
+    ? Object.keys(d.monthlyCat[0]).filter(
+        key =>
+          key !== "month" &&
+          key !== "yr"
+      )
+    : [];
 
   return (
     <div style={{background:P.bg,minHeight:"100vh",fontFamily:"'DM Sans','Helvetica Neue',sans-serif",color:P.textPrimary}}>
@@ -501,7 +844,11 @@ useEffect(() => {
               {[
                 {label:"Avg Review Score",  value:"4.09 / 5.0",    col:P.green},
                 {label:"Repeat Rate",       value:"3.0%",           col:P.coral},
-                {label:"VIP Revenue Share", value:"26.8%",          col:P.amber},
+                {
+  label:"VIP Revenue Share",
+  value:`${d.vipRevenueShare}%`,
+  col:P.amber
+},
                 {label:"Peak Month",        value:d.peakMonth?.month||"—", col:P.teal},
               ].map(s=>(
                 <div key={s.label} style={{background:P.surface,borderRadius:12,padding:"14px 18px",border:`1px solid ${P.cardBorder}`}}>
@@ -648,7 +995,15 @@ useEffect(() => {
                         <BarChart data={d.catRev} layout="vertical" margin={{top:0,right:20,bottom:0,left:100}}>
                           <CartesianGrid stroke={P.cardBorder} strokeDasharray="3 3" horizontal={false}/>
                           <XAxis type="number" tickFormatter={v=>`R$${(v/1000).toFixed(0)}K`} tick={{fill:P.textMuted,fontSize:10}} axisLine={false} tickLine={false}/>
-                          <YAxis type="category" dataKey="category" tick={{fill:P.textSecondary,fontSize:11}} axisLine={false} tickLine={false} width={105}/>
+                          <YAxis
+                                dataKey="category"
+                                type="category"
+                                width={180}
+                                tick={{
+                                  fill: "#94a3b8",
+                                  fontSize: 12
+                                }}
+                              />
                           <Tooltip content={<Tip/>}/>
                           <Bar dataKey="revenue" name="Revenue" radius={[0,4,4,0]}>
                             {d.catRev.map((_,i)=><Cell key={i} fill={BAR_COLORS[i%10]}/>)}
@@ -722,8 +1077,26 @@ useEffect(() => {
                         <div key={s.name} style={{display:"flex",justifyContent:"space-between",alignItems:"center",
                           padding:"10px 14px",background:P.surface,borderRadius:10,borderLeft:`3px solid ${s.color}`,marginBottom:8}}>
                           <div>
-                            <div style={{fontSize:13,fontWeight:600}}>{s.name}</div>
-                            <div style={{fontSize:11,color:P.textMuted}}>{s.pct}% · {fmtN(s.count)} customers</div>
+                            <div>
+                           <div
+                            style={{
+                              fontSize:13,
+                              fontWeight:600,
+                              color:P.textPrimary
+                            }}
+                          >
+                            {s.name}
+                          </div>
+
+                          <div
+                            style={{
+                              fontSize:11,
+                              color:P.textSecondary
+                            }}
+                          >
+                            {fmtN(s.count)} customers
+                          </div>
+                          </div>
                           </div>
                           <div style={{fontSize:16,fontWeight:700,color:s.color}}>{fmtK(s.revenue)}</div>
                         </div>
@@ -737,7 +1110,7 @@ useEffect(() => {
                 <div style={{height:160}}>
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
-                      <Pie data={[{name:"New",value:90556},{name:"Repeat",value:2801}]}
+                      <Pie data={repeatData}
                         cx="50%" cy="50%" innerRadius={44} outerRadius={72} dataKey="value" paddingAngle={3}>
                         <Cell fill={P.surface}/>
                         <Cell fill={P.amber}/>
@@ -748,9 +1121,38 @@ useEffect(() => {
                 </div>
                 <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginTop:10}}>
                   {[
-                    {label:"Single Purchase",v:"97.0%",sub:"90,556 customers",col:P.textMuted},
-                    {label:"Repeat Buyers",  v:"3.0%", sub:"2,801 customers", col:P.amber},
-                  ].map(s=>(
+  {
+    label:"Single Purchase",
+
+    v:`${(100 - d.repeatRate).toFixed(1)}%`,
+
+    sub:`${
+      fmtN(
+        repeatData.find(
+          r => r.name === "New"
+        )?.value || 0
+      )
+    } customers`,
+
+    col:P.textMuted
+  },
+
+  {
+    label:"Repeat Buyers",
+
+    v:`${d.repeatRate}%`,
+
+    sub:`${
+      fmtN(
+        repeatData.find(
+          r => r.name === "Repeat"
+        )?.value || 0
+      )
+    } customers`,
+
+    col:P.amber
+  }
+].map(s=>(
                     <div key={s.label} style={{padding:14,background:P.surface,borderRadius:10,textAlign:"center"}}>
                       <div style={{fontSize:22,fontWeight:700,color:s.col}}>{s.v}</div>
                       <div style={{fontSize:12,color:P.textSecondary,marginTop:2}}>{s.label}</div>
@@ -776,18 +1178,82 @@ useEffect(() => {
                   </tr>
                 </thead>
                 <tbody>
-                  {TOP_CUSTOMERS.map((c,i)=>(
-                    <tr key={i} style={{borderBottom:`1px solid ${P.cardBorder}`,background:i%2===0?"transparent":P.surface}}>
-                      <td style={{padding:"10px 12px",color:P.textMuted,fontWeight:700}}>#{i+1}</td>
-                      <td style={{padding:"10px 12px",fontFamily:"'DM Mono',monospace",color:P.textSecondary,fontSize:11}}>{c.id}</td>
-                      <td style={{padding:"10px 12px",fontWeight:700,color:P.amber}}>R${fmtN(c.spend)}</td>
-                      <td style={{padding:"10px 12px",color:P.textPrimary}}>{c.orders}</td>
-                      <td style={{padding:"10px 12px"}}>
-                        <span style={{background:"#2a1f00",color:P.amber,fontSize:11,fontWeight:600,padding:"3px 10px",borderRadius:20}}>VIP</span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
+
+  {topCustomers.map((c, i) => (
+
+    <tr
+      key={i}
+      style={{
+        borderBottom:`1px solid ${P.cardBorder}`,
+        background:
+          i % 2 === 0
+            ? "transparent"
+            : P.surface
+      }}
+    >
+
+      <td
+        style={{
+          padding:"10px 12px",
+          color:P.textMuted,
+          fontWeight:700
+        }}
+      >
+        #{i + 1}
+      </td>
+
+      <td
+        style={{
+          padding:"10px 12px",
+          fontFamily:"DM Mono, monospace",
+          color:P.textSecondary,
+          fontSize:11
+        }}
+      >
+        {c.customer_id.slice(0, 12)}...
+      </td>
+
+      <td
+        style={{
+          padding:"10px 12px",
+          fontWeight:700,
+          color:P.amber
+        }}
+      >
+        {fmtK(c.total_spend)}
+      </td>
+
+      <td
+        style={{
+          padding:"10px 12px",
+          color:P.textPrimary
+        }}
+      >
+        {c.orders}
+      </td>
+
+      <td style={{padding:"10px 12px"}}>
+
+        <span
+          style={{
+            background:"#2a1f00",
+            color:P.amber,
+            fontSize:11,
+            fontWeight:600,
+            padding:"3px 10px",
+            borderRadius:20
+          }}
+        >
+          VIP
+        </span>
+
+      </td>
+
+    </tr>
+
+  ))}
+
+</tbody>
               </table>
             </Card>
           </>
@@ -811,7 +1277,7 @@ useEffect(() => {
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={d.catRev} margin={{top:0,right:20,bottom:10,left:10}}>
                         <CartesianGrid stroke={P.cardBorder} strokeDasharray="3 3" vertical={false}/>
-                        <XAxis dataKey="displayName" tick={{fill:P.textMuted,fontSize:11}} axisLine={false} tickLine={false}/>
+                        <XAxis dataKey="short" tick={{fill:P.textMuted,fontSize:11}} axisLine={false} tickLine={false}/>
                         <YAxis tickFormatter={v=>`R$${(v/1000).toFixed(0)}K`} tick={{fill:P.textMuted,fontSize:11}} axisLine={false} tickLine={false}/>
                         <Tooltip content={<Tip/>}/>
                         <Bar dataKey="revenue" name="Revenue" radius={[4,4,0,0]}>
@@ -924,7 +1390,48 @@ useEffect(() => {
               <p style={{margin:"4px 0 0",fontSize:13,color:P.textSecondary}}>Data-driven strategic priorities from the Olist dataset</p>
             </div>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
-              {INSIGHTS.map((ins,i)=>(
+              {[
+  {
+    icon:"📈",
+    tag:"Revenue",
+    col:P.green,
+
+    title:`Revenue reached ${fmtK(d.totalRevenue)}`,
+
+    body:`${fmtN(d.totalOrders)} orders generated live SQL-backed revenue.`
+  },
+
+  {
+    icon:"💳",
+    tag:"Payments",
+    col:P.blue,
+
+    title:`Top payment: ${d.payData?.[0]?.name || "—"}`,
+
+    body:`${d.payData[0].pct}% of transactions use ${d.payData[0].name}.`
+  },
+
+  {
+    icon:"👑",
+    tag:"Customers",
+    col:P.amber,
+
+    title:`VIP Revenue Share: ${d.vipRevenueShare}%`,
+
+    body:`VIP customers contribute ${d.vipRevenueShare}% of total platform revenue.`
+  },
+
+  {
+    icon:"🛒",
+    tag:"Orders",
+    col:P.teal,
+
+    title:`Repeat Purchase Rate: ${d.repeatRate}%`,
+
+    body:`${d.repeatRate}% of customers placed repeat orders.`
+  }
+
+].map((ins,i)=>(
                 <Card key={i} style={{borderLeft:`3px solid ${ins.col}`}}>
                   <div style={{display:"flex",alignItems:"flex-start",gap:10,marginBottom:10}}>
                     <span style={{fontSize:20}}>{ins.icon}</span>
@@ -940,11 +1447,54 @@ useEffect(() => {
               <h3 style={{margin:"0 0 16px",fontSize:15,fontWeight:700}}>Executive Scorecard</h3>
               <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12}}>
                 {[
-                  {metric:"Revenue Growth",    score:"Excellent",    detail:"9× in 15 months",col:P.green},
-                  {metric:"Customer Retention",score:"Critical",     detail:"3% repeat rate", col:P.coral},
-                  {metric:"Product Diversity", score:"Strong",       detail:"10+ categories", col:P.teal},
-                  {metric:"Payment Mix",       score:"Concentrated", detail:"78% credit card",col:P.amber},
-                ].map(s=>(
+  {
+    metric:"Revenue",
+
+    score:fmtK(d.totalRevenue),
+
+    detail:"Live SQL revenue",
+
+    col:P.green
+  },
+
+  {
+    metric:"Repeat Rate",
+
+    score:`${d.repeatRate}%`,
+
+    detail:"Returning customers",
+
+    col:P.coral
+  },
+
+  {
+    metric:"Top Category",
+
+    score:
+      d.catRev?.[0]?.short || "—",
+
+    detail:
+      d.catRev?.[0]
+        ? fmtK(d.catRev[0].revenue)
+        : "—",
+
+    col:P.teal
+  },
+
+  {
+    metric:"Top Payment",
+
+    score:
+      d.payData?.[0]?.name || "—",
+
+    detail:
+      d.payData?.[0]
+        ? `${d.payData[0].pct}% share`
+        : "—",
+
+    col:P.amber
+  }
+].map(s=>(
                   <div key={s.metric} style={{textAlign:"center",padding:16,background:P.surface,borderRadius:12}}>
                     <div style={{fontSize:11,color:P.textMuted,marginBottom:6,textTransform:"uppercase",letterSpacing:"0.06em"}}>{s.metric}</div>
                     <div style={{fontSize:17,fontWeight:700,color:s.col}}>{s.score}</div>
@@ -958,7 +1508,7 @@ useEffect(() => {
       </div>
 
       <div style={{textAlign:"center",padding:20,borderTop:`1px solid ${P.cardBorder}`,color:P.textMuted,fontSize:11}}>
-        Olist E-Commerce · Executive Dashboard · 96,477 delivered orders · Sep 2016 – Oct 2018
+        Olist E-Commerce · Executive Dashboard · {fmtN(d.totalOrders)} delivered orders · Sep 2016 – Oct 2018
       </div>
     </div>
   );

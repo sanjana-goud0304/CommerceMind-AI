@@ -2,24 +2,55 @@ import pandas as pd
 from database import engine
 
 
+# ─────────────────────────────────────────────
+# TOP CATEGORIES
+# ─────────────────────────────────────────────
 def get_top_categories():
 
     query = """
+    WITH payment_per_order AS (
+
+        SELECT
+            order_id,
+            SUM(payment_value) AS total_payment
+
+        FROM payments
+
+        GROUP BY order_id
+    ),
+
+    item_counts AS (
+
+        SELECT
+            order_id,
+            COUNT(*) AS item_count
+
+        FROM order_items
+
+        GROUP BY order_id
+    )
+
     SELECT
+
         p.product_category_name,
 
         ROUND(
-            SUM(pay.payment_value),
+            SUM(
+                ppo.total_payment / ic.item_count
+            ),
             2
         ) AS total_revenue
 
     FROM order_items oi
 
-    JOIN payments pay
-    ON oi.order_id = pay.order_id
-
     JOIN products p
     ON oi.product_id = p.product_id
+
+    JOIN payment_per_order ppo
+    ON oi.order_id = ppo.order_id
+
+    JOIN item_counts ic
+    ON oi.order_id = ic.order_id
 
     GROUP BY p.product_category_name
 
@@ -28,27 +59,37 @@ def get_top_categories():
     LIMIT 10;
     """
 
-    df = pd.read_sql(query, engine)
+    result = pd.read_sql(query, engine)
 
-    return df.to_dict(orient="records")
+    return result.to_dict(orient="records")
 
 
+# ─────────────────────────────────────────────
+# MONTHLY REVENUE
+# ─────────────────────────────────────────────
 def get_monthly_revenue():
 
     query = """
     SELECT
-        YEAR(order_purchase_timestamp) AS year,
-        MONTH(order_purchase_timestamp) AS month,
-        ROUND(SUM(payment_value), 2) AS revenue,
-        COUNT(DISTINCT orders.order_id) AS orders
 
-    FROM orders
+        YEAR(o.order_purchase_timestamp) AS year,
 
-    JOIN payments
-        ON orders.order_id = payments.order_id
+        MONTH(o.order_purchase_timestamp) AS month,
 
+        ROUND(
+            SUM(pay.payment_value),
+            2
+        ) AS revenue,
+
+        COUNT(DISTINCT o.order_id)
+        AS orders
+
+    FROM orders o
+
+    JOIN payments pay
+    ON o.order_id = pay.order_id
     GROUP BY year, month
-
+    HAVING revenue > 0
     ORDER BY year, month;
     """
 
@@ -57,70 +98,118 @@ def get_monthly_revenue():
     return result.to_dict(orient="records")
 
 
+# ─────────────────────────────────────────────
+# CUSTOMER SEGMENTS
+# ─────────────────────────────────────────────
 def get_customer_segments():
 
     query = """
     SELECT
-    customer_segment,
-    COUNT(*) AS total_customers
 
-FROM (
+        customer_segment,
 
-    SELECT
+        COUNT(*) AS count,
 
-        c.customer_unique_id,
+        ROUND(
+            SUM(total_spent),
+            2
+        ) AS revenue
 
-        CASE
+    FROM (
 
-            WHEN SUM(pay.payment_value) > 5000
-            THEN 'VIP'
+        SELECT
 
-            WHEN SUM(pay.payment_value) > 2000
-            THEN 'Premium'
+            c.customer_unique_id,
 
-            ELSE 'Regular'
+            SUM(pay.payment_value)
+            AS total_spent,
 
-        END AS customer_segment
+            CASE
 
-    FROM customers c
+    WHEN SUM(pay.payment_value) > 1000
+    THEN 'VIP'
 
-    JOIN orders o
-    ON c.customer_id = o.customer_id
+    WHEN SUM(pay.payment_value) > 500
+    THEN 'Premium'
 
-    JOIN payments pay
-    ON o.order_id = pay.order_id
+    ELSE 'Regular'
 
-    GROUP BY c.customer_unique_id
+END AS customer_segment
 
-) AS segmented_customers
+        FROM customers c
 
-GROUP BY customer_segment;
+        JOIN orders o
+            ON c.customer_id = o.customer_id
+
+        JOIN payments pay
+            ON o.order_id = pay.order_id
+
+        GROUP BY c.customer_unique_id
+
+    ) segmented
+
+    GROUP BY customer_segment;
     """
 
     df = pd.read_sql(query, engine)
 
     return df.to_dict(orient="records")
 
+
+# ─────────────────────────────────────────────
+# CATEGORY REVENUE
+# ─────────────────────────────────────────────
 def get_category_revenue():
 
     query = """
+    WITH payment_per_order AS (
+
+        SELECT
+            order_id,
+            SUM(payment_value) AS total_payment
+
+        FROM payments
+
+        GROUP BY order_id
+    ),
+
+    item_counts AS (
+
+        SELECT
+            order_id,
+            COUNT(*) AS item_count
+
+        FROM order_items
+
+        GROUP BY order_id
+    )
+
     SELECT
-        products.product_category_name AS category,
 
-        ROUND(SUM(payments.payment_value), 2) AS revenue
+        p.product_category_name AS category,
 
-    FROM orders
+        ROUND(
+            SUM(
+                ppo.total_payment / ic.item_count
+            ),
+            2
+        ) AS revenue
 
-    JOIN order_items
-        ON orders.order_id = order_items.order_id
+    FROM orders o
 
-    JOIN products
-        ON order_items.product_id = products.product_id
+    JOIN payment_per_order ppo
+    ON o.order_id = ppo.order_id
 
-    JOIN payments
-        ON orders.order_id = payments.order_id
+    JOIN order_items oi
+    ON o.order_id = oi.order_id
 
-    GROUP BY products.product_category_name
+    JOIN products p
+    ON oi.product_id = p.product_id
+
+    JOIN item_counts ic
+    ON o.order_id = ic.order_id
+
+    GROUP BY p.product_category_name
 
     ORDER BY revenue DESC
 
@@ -131,33 +220,55 @@ def get_category_revenue():
 
     return result.to_dict(orient="records")
 
+
+# ─────────────────────────────────────────────
+# MONTHLY CATEGORY REVENUE
+# ─────────────────────────────────────────────
 def get_monthly_category_revenue():
 
     query = """
+    WITH top_categories AS (
+
+        SELECT
+
+            p.product_category_name
+
+        FROM order_items oi
+
+        JOIN products p
+        ON oi.product_id = p.product_id
+
+        GROUP BY p.product_category_name
+
+        ORDER BY SUM(oi.price) DESC
+
+        LIMIT 5
+    )
+
     SELECT
+
         YEAR(o.order_purchase_timestamp) AS year,
 
         MONTH(o.order_purchase_timestamp) AS month,
 
         p.product_category_name AS category,
 
-        ROUND(SUM(oi.price), 2) AS revenue
+        ROUND(
+            SUM(oi.price),
+            2
+        ) AS revenue
 
     FROM orders o
 
     JOIN order_items oi
-        ON o.order_id = oi.order_id
+    ON o.order_id = oi.order_id
 
     JOIN products p
-        ON oi.product_id = p.product_id
+    ON oi.product_id = p.product_id
 
-    WHERE p.product_category_name IN (
-        'beleza_saude',
-        'relogios_presentes',
-        'cama_mesa_banho',
-        'esporte_lazer',
-        'informatica_acessorios'
-    )
+    JOIN top_categories tc
+    ON p.product_category_name =
+       tc.product_category_name
 
     GROUP BY
         YEAR(o.order_purchase_timestamp),
@@ -173,5 +284,145 @@ def get_monthly_category_revenue():
 
     return result.to_dict(orient="records")
 
-    
-    
+
+# ─────────────────────────────────────────────
+# KPI SUMMARY
+# ─────────────────────────────────────────────
+def get_kpis():
+
+    query = """
+    SELECT
+
+        ROUND(
+            SUM(payment_value),
+            2
+        ) AS total_revenue,
+
+        COUNT(DISTINCT orders.order_id)
+        AS total_orders
+
+    FROM orders
+
+    JOIN payments
+    ON orders.order_id = payments.order_id;
+    """
+
+    result = pd.read_sql(query, engine)
+
+    return result.to_dict(orient="records")
+
+
+# ─────────────────────────────────────────────
+# PAYMENT BREAKDOWN
+# ─────────────────────────────────────────────
+def get_payment_breakdown():
+
+    query = """
+    SELECT
+
+        payment_type,
+
+        ROUND(
+            SUM(payment_value),
+            2
+        ) AS revenue
+
+    FROM payments
+
+    GROUP BY payment_type
+
+    ORDER BY revenue DESC;
+    """
+
+    result = pd.read_sql(query, engine)
+
+    return result.to_dict(orient="records")
+
+
+# ─────────────────────────────────────────────
+# REPEAT CUSTOMERS
+# ─────────────────────────────────────────────
+def get_repeat_customers():
+
+    query = """
+    WITH customer_orders AS (
+
+        SELECT
+
+            c.customer_unique_id,
+
+            COUNT(DISTINCT o.order_id)
+            AS total_orders
+
+        FROM customers c
+
+        JOIN orders o
+        ON c.customer_id = o.customer_id
+
+        GROUP BY c.customer_unique_id
+    )
+
+    SELECT
+
+        SUM(
+            CASE
+                WHEN total_orders = 1
+                THEN 1
+                ELSE 0
+            END
+        ) AS single_purchase,
+
+        SUM(
+            CASE
+                WHEN total_orders > 1
+                THEN 1
+                ELSE 0
+            END
+        ) AS repeat_purchase
+
+    FROM customer_orders;
+    """
+
+    result = pd.read_sql(query, engine)
+
+    return result.to_dict(orient="records")
+
+
+# ─────────────────────────────────────────────
+#TOP CUSTOMERS
+# ─────────────────────────────────────────────
+def get_top_customers():
+
+    query = """
+    SELECT
+
+        c.customer_unique_id AS customer_id,
+
+        ROUND(
+            SUM(pay.payment_value),
+            2
+        ) AS total_spend,
+
+        COUNT(DISTINCT o.order_id)
+        AS orders
+
+    FROM customers c
+
+    JOIN orders o
+    ON c.customer_id = o.customer_id
+
+    JOIN payments pay
+    ON o.order_id = pay.order_id
+
+    GROUP BY c.customer_unique_id
+
+    ORDER BY total_spend DESC
+
+    LIMIT 10;
+    """
+
+    result = pd.read_sql(query, engine)
+
+    return result.to_dict(orient="records")
+
+
