@@ -150,25 +150,29 @@ CommerceMind-AI/
 
 ## 🏠 Executive Overview
 
-![Overview Dashboard](./screenshots/overview-dashboard.png)
+![Overview Dashboard](./screenshots/overview-dashboard1.png)
+![Overview Dashboard](./screenshots/overview-dashboard2.png)
 
 ---
 
 ## 📈 Revenue Analytics
 
-![Revenue Analytics](./screenshots/revenue-analytics.png)
+![Revenue Analytics](./screenshots/revenue-analytics1.png)
+![Revenue Analytics](./screenshots/revenue-analytics2.png)
 
 ---
 
 ## 👥 Customer Analytics
 
-![Customer Analytics](./screenshots/customer-analytics.png)
+![Customer Analytics](./screenshots/customer-analytics1.png)
+![Customer Analytics](./screenshots/customer-analytics2.png)
 
 ---
 
 ## 🛒 Product Analytics
 
-![Product Analytics](./screenshots/product-analytics.png)
+![Product Analytics](./screenshots/product-analytics1.png)
+![Product Analytics](./screenshots/product-analytics2.png)
 
 ---
 
