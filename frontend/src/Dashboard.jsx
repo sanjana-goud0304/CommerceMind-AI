@@ -192,7 +192,7 @@ const [topCustomers, setTopCustomers] = useState([]);
 useEffect(() => {
 
   axios
-    .get("http://127.0.0.1:8000/monthly-revenue")
+    .get("https://commercemind-ai.onrender.com/monthly-revenue")
 
     .then((response) => {
 
@@ -230,7 +230,7 @@ useEffect(() => {
 useEffect(() => {
 
   axios
-    .get("http://127.0.0.1:8000/category-revenue")
+    .get("https://commercemind-ai.onrender.com/category-revenue")
 
     .then((response) => {
 
@@ -268,7 +268,7 @@ useEffect(() => {
 useEffect(() => {
 
   axios
-    .get("http://127.0.0.1:8000/monthly-category-revenue")
+    .get("https://commercemind-ai.onrender.com/monthly-category-revenue")
 
     .then((response) => {
 
@@ -318,7 +318,7 @@ useEffect(() => {
 useEffect(() => {
 
   axios
-    .get("http://127.0.0.1:8000/kpis")
+    .get("https://commercemind-ai.onrender.com/kpis")
 
     .then((response) => {
 
@@ -344,7 +344,7 @@ useEffect(() => {
 useEffect(() => {
 
   axios
-    .get("http://127.0.0.1:8000/payment-breakdown")
+    .get("https://commercemind-ai.onrender.com/payment-breakdown")
 
     .then((response) => {
 
@@ -383,7 +383,7 @@ useEffect(() => {
 useEffect(() => {
 
   axios
-    .get("http://127.0.0.1:8000/customer-segments")
+    .get("https://commercemind-ai.onrender.com/customer-segments")
 
     .then((response) => {
 
@@ -442,7 +442,7 @@ useEffect(() => {
 useEffect(() => {
 
   axios
-    .get("http://127.0.0.1:8000/repeat-customers")
+    .get("https://commercemind-ai.onrender.com/repeat-customers")
 
     .then((response) => {
 
@@ -485,7 +485,7 @@ useEffect(() => {
 useEffect(() => {
 
   axios
-    .get("http://127.0.0.1:8000/top-customers")
+    .get("https://commercemind-ai.onrender.com/top-customers")
 
     .then((response) => {
 
