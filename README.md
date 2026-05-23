@@ -1,104 +1,134 @@
-🚀 CommerceMind AI — E-Commerce Executive Intelligence Dashboard
+# 🚀 CommerceMind AI — E-Commerce Executive Intelligence Dashboard
 
-A full-stack AI-powered e-commerce analytics platform built using FastAPI, MySQL, React, and advanced SQL.
+A full-stack AI-powered e-commerce analytics platform built using **FastAPI, MySQL, React, and advanced SQL**.
+
 This project transforms raw Olist marketplace data into actionable executive insights through interactive dashboards, live KPIs, customer analytics, product intelligence, and business recommendations.
 
-🌐 Live Demo
-Frontend (Vercel)
+---
 
-CommerceMind AI Dashboard
+# 🌐 Live Demo
 
-Backend API (Render)
+## Frontend (Vercel)
 
-FastAPI Backend
+🔗 https://commerce-mind-ai.vercel.app/
 
-API Documentation
+## Backend API (Render)
 
-Swagger Docs
+🔗 https://commercemind-ai.onrender.com
 
-📌 Project Overview
+## API Documentation
+
+🔗 https://commercemind-ai.onrender.com/docs
+
+---
+
+# 📌 Project Overview
 
 CommerceMind AI simulates a real-world executive analytics platform used by modern e-commerce companies.
 
 The dashboard provides:
 
-📈 Revenue intelligence
-👥 Customer segmentation
-🛒 Product performance analytics
-💳 Payment behavior insights
-🔥 Business KPI tracking
-🤖 AI-powered business recommendations
-🎛 Interactive slicers and filters
-⚡ Live SQL-backed analytics APIs
-🛠 Tech Stack
-Frontend
-React.js
-Vite
-Recharts
-JavaScript
-CSS3
-Backend
-FastAPI
-SQLAlchemy
-MySQL
-Pandas
-Database
-MySQL (Railway Cloud Database)
-Deployment
-Vercel (Frontend)
-Render (Backend)
-Railway (Cloud MySQL)
-✨ Features
-📊 Executive Dashboard
-Total Revenue KPI
-Orders KPI
-Average Order Value
-Review Score Analytics
-Peak Sales Month Detection
-📈 Revenue Analytics
-Monthly Revenue Trends
-Revenue by Category
-Payment Method Analysis
-Dynamic Revenue Filtering
-👥 Customer Analytics
-Customer Segmentation
-VIP Customer Detection
-Repeat Purchase Analysis
-Retention Insights
-🛒 Product Analytics
-Top Performing Categories
-Monthly Category Growth
-Product Performance Tracking
-🤖 AI Business Insights
-Executive Scorecards
-Revenue Recommendations
-Customer Retention Insights
-Payment Optimization Suggestions
-🎛 Interactive Filtering
-Year Filters
-Payment Filters
-Product Category Filters
-Customer Segment Filters
-🧠 Advanced SQL Concepts Used
-CTEs
-Window Functions
-Aggregations
-Ranking Functions
-Joins
-CASE WHEN
-Customer Segmentation Logic
-Revenue Cohort Analysis
-Repeat Purchase Analysis
-📂 Project Structure
+- 📈 Revenue Intelligence
+- 👥 Customer Segmentation
+- 🛒 Product Performance Analytics
+- 💳 Payment Behavior Insights
+- 🔥 Business KPI Tracking
+- 🤖 AI-Powered Business Recommendations
+- 🎛 Interactive Slicers & Filters
+- ⚡ Live SQL-Backed Analytics APIs
+
+---
+
+# 🛠 Tech Stack
+
+## Frontend
+- React.js
+- Vite
+- Recharts
+- JavaScript
+- CSS3
+
+## Backend
+- FastAPI
+- SQLAlchemy
+- Pandas
+- MySQL
+
+## Database
+- Railway MySQL
+
+## Deployment
+- Vercel
+- Render
+- Railway
+
+---
+
+# ✨ Features
+
+## 📊 Executive Dashboard
+- Total Revenue KPI
+- Orders KPI
+- Average Order Value
+- Peak Sales Month Detection
+- Review Score Analytics
+
+## 📈 Revenue Analytics
+- Monthly Revenue Trends
+- Revenue by Category
+- Payment Method Analysis
+- Dynamic Revenue Filtering
+
+## 👥 Customer Analytics
+- Customer Segmentation
+- VIP Customer Detection
+- Repeat Purchase Analysis
+- Retention Insights
+
+## 🛒 Product Analytics
+- Top Performing Categories
+- Monthly Category Growth
+- Product Performance Tracking
+
+## 🤖 AI Business Insights
+- Executive Scorecards
+- Revenue Recommendations
+- Customer Retention Insights
+- Payment Optimization Suggestions
+
+## 🎛 Interactive Filtering
+- Year Filters
+- Payment Filters
+- Product Category Filters
+- Customer Segment Filters
+
+---
+
+# 🧠 Advanced SQL Concepts Used
+
+- CTEs
+- Window Functions
+- Aggregations
+- Ranking Functions
+- CASE WHEN
+- Complex JOINs
+- Customer Segmentation Logic
+- Repeat Purchase Analysis
+- Revenue Cohort Analysis
+
+---
+
+# 📂 Project Structure
+
+```bash
 CommerceMind-AI/
 │
 ├── backend/
 │   ├── main.py
 │   ├── services.py
-│   ├── analytics.py
-│   ├── ai_insights.py
 │   ├── database.py
-│   └── load_to_mysql.py
+│   ├── requirements.txt
+│   └── .env
 │
 ├── frontend/
 │   ├── src/
@@ -106,97 +136,178 @@ CommerceMind-AI/
 │   │   ├── App.jsx
 │   │   └── main.jsx
 │   │
-│   └── public/
-│
-├── datasets/
+│   ├── public/
+│   └── package.json
 │
 ├── screenshots/
 │
 └── README.md
-📸 Dashboard Screenshots
-🏠 Executive Overview
+```
+
+---
+
+# 📸 Dashboard Screenshots
+
+## 🏠 Executive Overview
+
 ![Overview Dashboard](./screenshots/overview-dashboard.png)
-📈 Revenue Analytics
+
+---
+
+## 📈 Revenue Analytics
+
 ![Revenue Analytics](./screenshots/revenue-analytics.png)
-👥 Customer Analytics
+
+---
+
+## 👥 Customer Analytics
+
 ![Customer Analytics](./screenshots/customer-analytics.png)
-🛒 Product Analytics
+
+---
+
+## 🛒 Product Analytics
+
 ![Product Analytics](./screenshots/product-analytics.png)
-🤖 Business Insights
+
+---
+
+## 🤖 Business Insights
+
 ![Business Insights](./screenshots/business-insights.png)
-⚙️ Installation & Setup
-1️⃣ Clone Repository
-git clone https://github.com/YOUR_USERNAME/CommerceMind-AI.git
+
+---
+
+# ⚙️ Installation & Setup
+
+## 1️⃣ Clone Repository
+
+```bash
+git clone https://github.com/sanjana-goud0304/CommerceMind-AI.git
 cd CommerceMind-AI
-🔹 Backend Setup
-Install Dependencies
+```
+
+---
+
+# 🔹 Backend Setup
+
+## Install Dependencies
+
+```bash
 pip install -r requirements.txt
-Run Backend
+```
+
+## Run Backend
+
+```bash
 uvicorn main:app --reload
+```
 
 Backend runs at:
 
+```bash
 http://127.0.0.1:8000
-🔹 Frontend Setup
-Install Dependencies
+```
+
+---
+
+# 🔹 Frontend Setup
+
+## Install Dependencies
+
+```bash
 npm install
-Start Frontend
+```
+
+## Run Frontend
+
+```bash
 npm run dev
+```
 
 Frontend runs at:
 
+```bash
 http://localhost:5173
-🔌 API Endpoints
-Endpoint	Description
-/kpis	Dashboard KPIs
-/monthly-revenue	Monthly revenue trend
-/category-revenue	Revenue by category
-/payment-analysis	Payment breakdown
-/customer-segments	Customer segmentation
-/repeat-customers	Repeat purchase analysis
-/monthly-category-revenue	Monthly category performance
-/ai-insights	AI-generated recommendations
-📊 Dataset
+```
 
-This project uses the publicly available Brazilian Olist E-Commerce Dataset.
+---
+
+# 🔌 API Endpoints
+
+| Endpoint | Description |
+|----------|-------------|
+| `/kpis` | Dashboard KPIs |
+| `/monthly-revenue` | Monthly Revenue Trend |
+| `/category-revenue` | Revenue By Category |
+| `/payment-breakdown` | Payment Breakdown |
+| `/customer-segments` | Customer Segmentation |
+| `/repeat-customers` | Repeat Purchase Analysis |
+| `/monthly-category-revenue` | Monthly Category Performance |
+
+---
+
+# 📊 Dataset
+
+This project uses the publicly available **Brazilian Olist E-Commerce Dataset**.
 
 Dataset includes:
+- Orders
+- Customers
+- Payments
+- Products
+- Reviews
+- Sellers
 
-Orders
-Customers
-Payments
-Products
-Reviews
-Sellers
-🚀 Deployment Architecture
-Service	Platform
-Frontend	Vercel
-Backend API	Render
-Database	Railway MySQL
-💡 Key Business Insights Generated
-Credit Card dominates payment ecosystem
-VIP customers contribute disproportionately high revenue
-Repeat purchase rate reveals retention opportunities
-Beauty & Health category drives highest revenue
-Revenue accelerated significantly during late 2017
-📈 Future Improvements
-AI chatbot integration
-Predictive sales forecasting
-Real-time streaming analytics
-User authentication
-Exportable reports
-Advanced ML recommendation engine
-👩‍💻 Author
-Sanjana S
+---
+
+# 🚀 Deployment Architecture
+
+| Service | Platform |
+|----------|-----------|
+| Frontend | Vercel |
+| Backend API | Render |
+| Database | Railway MySQL |
+
+---
+
+# 💡 Key Business Insights Generated
+
+- Credit Card dominates the payment ecosystem
+- VIP customers contribute disproportionately high revenue
+- Repeat purchase rate reveals retention opportunities
+- Beauty & Health category drives the highest revenue
+- Revenue accelerated significantly during late 2017
+
+---
+
+# 📈 Future Improvements
+
+- AI Chatbot Integration
+- Predictive Sales Forecasting
+- Real-Time Streaming Analytics
+- User Authentication
+- Exportable Reports
+- ML Recommendation Engine
+
+---
+
+# 👩‍💻 Author
+
+## Sanjana S
 
 Aspiring Data Analyst & Full Stack Analytics Developer
 
-SQL
-Python
-FastAPI
-React
-Data Visualization
-Business Analytics
-⭐ If You Like This Project
+### Skills
+- SQL
+- Python
+- FastAPI
+- React
+- Data Visualization
+- Business Analytics
 
-Give this repository a ⭐ on GitHub!
+---
+
+# ⭐ Support
+
+If you like this project, give it a ⭐ on GitHub!
