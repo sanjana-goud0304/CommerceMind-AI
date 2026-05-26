@@ -150,6 +150,8 @@ def get_category_revenue():
 
     result = pd.read_sql(query, engine)
 
+    result = result.fillna("Unknown")
+
     return result.to_dict(orient="records")
 
 # ─────────────────────────────────────────────
@@ -160,9 +162,17 @@ def get_monthly_category_revenue():
     query = """
     SELECT
 
-        strftime('%Y', o.order_purchase_timestamp) AS year,
+        substr(
+            o.order_purchase_timestamp,
+            1,
+            4
+        ) AS year,
 
-        strftime('%m', o.order_purchase_timestamp) AS month,
+        substr(
+            o.order_purchase_timestamp,
+            6,
+            2
+        ) AS month,
 
         p.product_category_name AS category,
 
@@ -191,8 +201,10 @@ def get_monthly_category_revenue():
 
     result = pd.read_sql(query, engine)
 
+    result = result.fillna("Unknown")
+
     return result.to_dict(orient="records")
-    
+
 
 
 
