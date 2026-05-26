@@ -236,15 +236,21 @@ useEffect(() => {
 
       const formatted = response.data.map((item) => ({
 
-        category: item.category,
+  category:
+    item.category ||
+    item.product_category_name,
 
-        revenue: Number(item.revenue),
+  revenue: Number(item.revenue),
 
-        short: item.category
-          .replaceAll("_", " ")
-          .slice(0, 12)
+  short:
+    (
+      item.category ||
+      item.product_category_name
+    )
+      .replaceAll("_", " ")
+      .slice(0, 12)
 
-      }));
+}));
 
       setCategoryRevenue(formatted);
 
@@ -288,8 +294,10 @@ useEffect(() => {
 
         }
 
-        grouped[key][item.category] =
-          Number(item.revenue);
+        grouped[key][
+  item.category ||
+  item.product_category_name
+] = Number(item.revenue);
 
       });
 
@@ -511,9 +519,17 @@ useEffect(() => {
 
   // rest of dashboard code below
   const [tab, setTab] = useState("overview");
-  const [filters, setFilters] = useState({
-    year:["All"],category:["All"],payment:["All"],segment:["All"],
-  });
+ const [filters,setFilters] = useState({
+
+  year:["All"],
+
+  category:["All"],
+
+  payment:["All"],
+
+  segment:["All"]
+
+});
 
   const TABS = ["overview","revenue","customers","products","insights"];
   const clearFilters = () => setFilters({year:["All"],category:["All"],payment:["All"],segment:["All"]});
@@ -530,20 +546,9 @@ const d = useMemo(() => {
       : filters.year;
 
   const cats =
-    filters.category.includes("All")
-      ? [
-          ...new Set(
-            monthlyCategoryRevenue.flatMap(
-              (item) =>
-                Object.keys(item).filter(
-                  (key) =>
-                    !["month","yr"]
-                      .includes(key)
-                )
-            )
-          )
-        ]
-      : filters.category;
+  filters.category.includes("All")
+    ? categoryRevenue.map(c => c.category)
+    : filters.category;
 
   const pays =
     filters.payment.includes("All")
@@ -571,41 +576,48 @@ const d = useMemo(() => {
 
 
   // Category revenue
+ 
   const catRev =
-    categoryRevenue
-      .filter(c =>
-        cats.includes(c.category)
-      )
-      .sort(
-        (a,b) =>
-          b.revenue - a.revenue
-      );
+  categoryRevenue
+    .filter(c =>
+      cats.includes(c.category)
+    )
+    .sort(
+      (a,b) =>
+        b.revenue - a.revenue
+    );
+
+    console.log("CATEGORY REVENUE:", categoryRevenue);
+
+console.log("CATS:", cats);
+
+console.log("CAT REV:", catRev);
+  
 
 
   // Payment data
   const payFilt =
-    paymentData.filter(p =>
-      pays.includes(p.name)
-    );
+  paymentData.filter(p =>
+    pays.includes(p.name)
+  );
 
-  const payTotal =
-    payFilt.reduce(
-      (s,p)=>s+p.value,
-      0
-    );
+const payTotal =
+  payFilt.reduce(
+    (s,p)=>s + p.value,
+    0
+  );
 
-  const payData =
-    payFilt.map(p => ({
-      ...p,
+const payData =
+  payFilt.map(p => ({
+    ...p,
 
-      pct:
-        payTotal > 0
-          ? +(
-              (p.value/payTotal)
-              * 100
-            ).toFixed(1)
-          : 0,
-    }));
+    pct:
+      payTotal > 0
+        ? +(
+            (p.value / payTotal) * 100
+          ).toFixed(1)
+        : 0,
+  }));
 
 
   // Segment data
@@ -679,23 +691,23 @@ const vipRevenueShare =
 
   // Repeat Rate
   const repeatCustomers =
-    repeatData.find(
-      r => r.name === "Repeat"
-    )?.value || 0;
+  repeatData.find(
+    r => r.name === "Repeat"
+  )?.value || 0;
 
-  const totalRepeatCustomers =
-    repeatData.reduce(
-      (s,r)=>s+r.value,
-      0
-    );
+const totalRepeatCustomers =
+  repeatData.reduce(
+    (s,r)=>s+r.value,
+    0
+  );
 
-  const repeatRate =
-    totalRepeatCustomers > 0
-      ? (
-          (repeatCustomers /
-          totalRepeatCustomers) * 100
-        ).toFixed(1)
-      : 0;
+const repeatRate =
+  totalRepeatCustomers > 0
+    ? (
+        (repeatCustomers /
+        totalRepeatCustomers) * 100
+      ).toFixed(1)
+    : 0;
 
 
   // Peak month
@@ -954,7 +966,7 @@ return {
             <div style={{marginBottom:20}}>
               <h2 style={{margin:0,fontSize:20,fontWeight:700}}>Revenue Analytics</h2>
               <p style={{margin:"4px 0 0",fontSize:13,color:P.textSecondary}}>
-                {d.monthly.length} months · {d.catRev.length} categories · {d.payData.length} payment methods
+                {d.monthly.length} months · {activeCategories.length} categories · {d.payData.length} payment methods
               </p>
             </div>
             <Card style={{marginBottom:16}}>
@@ -987,7 +999,7 @@ return {
             <div style={{display:"grid",gridTemplateColumns:"3fr 2fr",gap:16}}>
               <Card>
                 <h3 style={{margin:"0 0 4px",fontSize:15,fontWeight:700}}>Revenue by Category</h3>
-                <p style={{margin:"0 0 16px",fontSize:12,color:P.textSecondary}}>{d.catRev.length} categories — use Category slicer to filter</p>
+                <p style={{margin:"0 0 16px",fontSize:12,color:P.textSecondary}}>{activeCategories.length} categories — use Category slicer to filter</p>
                 {d.catRev.length===0
                   ? <p style={{color:P.textMuted,textAlign:"center",padding:"32px 0"}}>No categories selected</p>
                   : <div style={{height:Math.max(240,d.catRev.length*36+50)}}>
@@ -1277,7 +1289,7 @@ return {
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={d.catRev} margin={{top:0,right:20,bottom:10,left:10}}>
                         <CartesianGrid stroke={P.cardBorder} strokeDasharray="3 3" vertical={false}/>
-                        <XAxis dataKey="short" tick={{fill:P.textMuted,fontSize:11}} axisLine={false} tickLine={false}/>
+                       <XAxis dataKey="short" tick={{fill:P.textMuted,fontSize:11}} axisLine={false} tickLine={false} />
                         <YAxis tickFormatter={v=>`R$${(v/1000).toFixed(0)}K`} tick={{fill:P.textMuted,fontSize:11}} axisLine={false} tickLine={false}/>
                         <Tooltip content={<Tip/>}/>
                         <Bar dataKey="revenue" name="Revenue" radius={[4,4,0,0]}>
@@ -1408,7 +1420,7 @@ return {
 
     title:`Top payment: ${d.payData?.[0]?.name || "—"}`,
 
-    body:`${d.payData[0].pct}% of transactions use ${d.payData[0].name}.`
+    body:`${d.payData?.[0]?.pct || 0}% of transactions use ${d.payData?.[0]?.name || "N/A"}.`
   },
 
   {
@@ -1471,7 +1483,7 @@ return {
     metric:"Top Category",
 
     score:
-      d.catRev?.[0]?.short || "—",
+       d.catRev?.[0]?.category || "—",
 
     detail:
       d.catRev?.[0]
